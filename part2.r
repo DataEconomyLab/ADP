@@ -245,5 +245,122 @@ subset(iris,
        select = c(Species, Sepal.Length))
 
        
-       
-       
+a <- matrix(1:12, nrow=4, ncol=3)
+apply(a, 1, max)
+
+apply(iris[,1:4], 2, mean)       
+
+a <- c(1,2,3)            # a는 1,2,3의 숫자가 저장된 벡터터
+# FUN 인자의 값으로 제곱을 계산해 주는 사용자 정의 함수를 지정
+lapply(a, FUN=function(x){x^2})
+
+# 데이터 구조 확인하기 : lapply 함수를 적용한 후 반환되는 데이터는 리스트임을 알 수 있음
+class(lapply(a, FUN=function(x){x^2}))      # class() : 객체의 물리적 자료형 반환
+
+# 만약 리스트로 반환된 결과를 벡터로 변환하고 싶다면 unlist함수를 이용
+b <- lapply(a, FUN=function(x){x^2})        # lapply를 적용한 결과를 변수 b에 저장
+unlist(b)                                   # unlist함수를 이용하여 리스트 b를 벡터로 변환환ㄴ
+
+sapply(iris, class)
+
+# 데이터 구조 확인 : 변수마다 함수를 적용한 결과 값이 하나씩 존재하므로 문자형 벡터로 반환
+class(sapply(iris, class))                  # "character"는 문자를 저장한 벡터를 의미미
+
+sapply(iris, summary)                       # summary() : 데이터의 기초 통계량을 요약해주는 함수
+
+# 데이터구조 확인 : 변수마다 함수를 적용한 결과 값의 길이가 다르므로 리스트로 봔환
+class(sapply(iris, summary))
+
+# fivenum() : 최소값, 1사분위수, 중위수, 3사분위수, 최대값을 차례로 출력해주는 함수
+
+# 1~100까지의 숫자가 저장된 벡터생성
+test <- c(1:100)
+
+# fivenum 함수를 적용
+fivenum(test)
+
+# vapply를 이용하여 fivenum 함수를 적용하는데, 출력되는 결과의 형식(Template)을 직접 지정
+test <- list(test)          # 출력형태를 리스트로 변환
+
+# 출력되는 결과의 양식(Template)을 Min, Q1, Median, Q3, Max로 지정
+test2 <- vapply(test, fivenum, c("Min" = 0, "Q1" = 0, "Median" = 0, "Q3" = 0, "Max" = 0))
+test2
+
+# rep(x, times, ...)
+# x: 반복할 객체, times: 반복횟수
+rep(1,4)
+rep(2,3)
+rep(3,2)
+rep(4,1)
+
+# rep 함수의 x 인자값 : c(1:4), times 인자값:c(4,1)
+mapply(rep, c(1:4), c(4:1))
+
+# googleVis 패키지의 Fruits 데이터를 이용하기 위해 패키지 설치 및 로드
+install.packages("googleVis")
+library(googleVis)
+
+# Fruits 데이터의 상위 6개의 행 확인
+head(Fruits)
+
+# tapply 함수를 이용하여 과일종류별 판매량의 평균 산출
+tapply(Fruits$Sales, Fruits$Fruit, mean)
+
+# INDEX 인자에 비교구문을 사용하여 그룹을 지정
+tapply(Fruits$Profit, Fruits$Location=="West", mean)
+
+# 패키지 설치 및 로드
+install.packages("plyr")
+library(plyr)
+
+#변수명을 지정하지 않고 adply를 이용해 연산
+adply(iris, 1, 
+      function(row){ifelse(row$Petal.Length<1.5 &
+                           row$Species=="setosa", "1", "0")})
+
+# 변수명을 'setosa_PL1.5'로 지정하여 데이터프레임으로 반환
+adply(iris,1,
+      function(row) {
+        data.frame(setosa_PL1.5=
+                     c(ifelse(row$Petal.Length<1.5 &
+                                row$Species=="setosa", "1", "0")))
+      })
+
+ddply(iris, .(Species), function(sub){
+  data.frame(
+    mean_SL=mean(sub$Sepal.Length), mean_SW=mean(sub$Sepal.Width),
+    mean_PL=mean(sub$Petal.Length), mean_PW=mean(sub$Petal.Width))
+})
+
+# variables 인자 자리 .()에 그룹화 할 변수와 조건을 입력
+ddply(iris, .(Species, Petal.Length<1.5), function(sub){
+  data.frame(
+    mean_SL=mean(sub$Sepal.Length), mean_SW=mean(sub$Sepal.Width),
+    mean_PL=mean(sub$Petal.Length), mean_PW=mean(sub$Petal.Width))
+})
+
+# baseball 데이터 확인
+str(baseball)
+
+# 원본데이터에 avgG 칼럼(선수별 연평균 출전횟수)을 추가하여 출력
+ddply(baseball, .(id), transform, avgG=sum(g)/length(year))
+
+# 원본 데이터에 avgG 칼럼과 avgG_RND(avgG칼럼을 반올림) 칼럼을 한번에 추가하여 출력
+# 이 경우, mutate가 아닌 transform을 사용하면 에러가 발생함
+ddply(baseball, .(id), mutate, avgG=sum(g)/length(year), avgG_RND=round(avgG))
+
+# summarise를 활용해 선수별 마지막 경기 출전년도 구하기기
+ddply(baseball, .(id), summarise, year_fin=max(year))
+
+# summarise를 활용해 팀별 홈런 수의 합 출력하기
+ddply(baseball, .(team), summarise, hr_sum=sum(hr))
+
+ddply(baseball, .(id), subset, year==max(year), select=c("id", "year", "stint", "team", "lg", "g"))
+
+# 패키지 설치 및 로드
+install.packages("dplyr")
+library(dplyr)
+library(MASS)
+
+# filter 함수를 사용하여 조건에 맞는 행 추출
+Cars93 %>% filter((Manufacturer=="Audi" | Manufacturer=="BMW") & EngineSize>=2.4)
