@@ -172,3 +172,78 @@ num <- c(50:500)
 # 생성한 사용자 정의 함수를 이용하여 정규화 수행
 num_new <- normalize(num)
 head(num_new)
+
+# 데이터 결합
+# 행을 기준으로 묶을 데이터 생성 : rbind를 사용할 때에는 열의 이름과 개수가 동일해야 함
+customer1 <- data.frame(id = c("c01", "c02", "c03", "c04"), 
+                        last_name = c("Lee", "Kim", "Choi", "Park"))
+
+customer2 <- data.frame(id = c("c05", "c06", "c07"),
+                        last_name = c("Lim", "Bae", "Kim"))
+
+
+# rbind를 사용하여 두 데이터프레임을 결합
+id_name <- rbind(customer1, customer2)
+id_name
+
+# 열을 기준으로 묶을 데이터 생성 : cbind를 사용할 때에는 행의 개수가 동일해야 함
+# age 변수와 income 변수로 구성된 데이터프레임 생성
+age_income <- data.frame(age = c(20, 25, 37, 40, 32, 45, 37),
+                         income = c(2500, 6400, 0, 7000, 3400, 3800, 5010))
+
+# cbind를 사용하여 두 데이터프레임을 결합
+customer <- cbind(id_name, age_income)
+customer
+
+# 병합에 사용할 데이터프레임 생성
+id_name <- data.frame(id = c("c01", "c02", "c03", "c04", "c05", "c06", "c07"),
+                      last_name = c("Lee", "Kim", "Choi", "Park", "Lim", "Bae", "Kim"))
+
+id_number <- data.frame(id = c("c03", "c04", "c05", "c06", "c07", "c08", "c09"),
+                        number = c(3, 1, 0, 7, 3, 4, 1))
+
+# id_name, id_number 데이터프레임 확인
+id_name
+id_number
+
+merge(id_name, id_number, by = 'id')
+
+# 기준칼럼에 공통된 값이 없는 경우, 다른 변수 값 자리에는 NA가 채워짐
+merge(id_name, id_number, by = 'id', all = T)
+merge(id_name, id_number, by = 'id', all.x = T)
+merge(id_name, id_number, by = 'id', all.y = T)
+
+# 데이터 요약 - aggregate
+aggregate(Sepal.Width~Species, iris, mean)
+aggregate(cbind(Sepal.Width, Petal.Width)~Species, iris, mean)
+
+# 내장데이터 Titanic의 구조 확인
+str(Titanic)
+
+# 분석을 위해 Titanic 데이터를 데이터프레임으로 변환한 뒤 다시 구조를 확인
+# as.data.frame() : 객체를 데이터프레임으로 변환
+Titanic <- as.data.frame(Titanic)
+
+str(Titanic)         # 데이터 구조가 데이터프레임으로 변환되었음을 확인 가능
+
+# table 함수를 이용하여 범주형 변수 Class에 대한 도수분포표를 생성
+table(Titanic$Class)
+
+table(Titanic$Class, Titanic$Survived)
+
+# Age에 따른 Survived에 대한 비율을 파악
+prop.table(table(Titanic$Age, Titanic$Survived))
+
+# 행 별 비율 파악
+prop.table(table(Titanic$Age, Titanic$Survived), 1)
+
+# 열 별 비율 파악
+prop.table(table(Titanic$Age, Titanic$Survived), 2)
+
+subset(iris,
+       subset = (Species == 'setosa' & Sepal.Length > 5.5), 
+       select = c(Species, Sepal.Length))
+
+       
+       
+       
