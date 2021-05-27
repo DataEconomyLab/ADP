@@ -364,3 +364,98 @@ library(MASS)
 
 # filter 함수를 사용하여 조건에 맞는 행 추출
 Cars93 %>% filter((Manufacturer=="Audi" | Manufacturer=="BMW") & EngineSize>=2.4)
+
+# select를 사용하여 특정 변수만 추출
+Cars93 %>% select(Model, Type, Price)
+# 에러 발생 이유 : MASS 패키지의 select()와 dply의 select()가 충돌하기 때문
+
+# 해결 방법 : 사용할 select 함수가 dplyr의 함수임을 명시해 주기
+Cars93 %>% dplyr::select(Model, Type, Price)
+
+# filter와 select를 조합하여 조건을 만족하는 데이터의 특정 열만 추출
+Cars93 %>% filter((Manufacturer == "Chevrolet"|Manufacturer=="Volkswagen") & Price >= 10) %>%
+  dplyr::select(Manufacturer, Model, Type, Price)
+
+# group_by와 summarise를 조합하기
+Cars93 %>% group_by(Manufacturer) %>%
+  summarise(mean_Price=mean(Price), max_Weight=max(Weight))
+
+Cars93 %>% group_by(Type, AirBags) %>% summarise(mean_Weight=mean(Weight))
+
+# mutate를 이용해 파생변수 생성하기
+Cars93 %>% mutate(Pr_level=ifelse(Price < 12, "low", 
+                                  ifelse(Price >= 12 & Price < 23, "middle", "high"))) %>%
+  dplyr::select(Model, Price, Pr_level)
+
+# filter, select, group_by, mutate, arrange의 조합
+Cars93 %>% 
+  filter(Type %in% c("Midsize", "Small")) %>%
+  dplyr::select(Model, Type, Weight, Price) %>%
+  group_by(Type) %>%
+  mutate(Weight_lv=ifelse(Weight<median(Weight),"low", "high")) %>%
+  arrange(Price)
+
+# NAME, PRICE 데이터 생성
+NAME<-data.frame(code=c("A01", "A02", "A03"),
+                 name=c("coffee", "cake", "cookie"))
+
+NAME
+
+PRICE<-data.frame(code=c("A01","A02","A04"),
+                  price=c(3000, 4000, 3000))
+
+PRICE
+
+# left_join
+cafe_left <- left_join(NAME, PRICE, by="code")
+cafe_left
+
+# right_join
+cafe_right <- right_join(NAME, PRICE, by="code")
+cafe_right
+
+# inner_join
+cafe_inner <- inner_join(NAME, PRICE, by="code")
+cafe_inner
+
+# full_join
+cafe_full <- full_join(NAME, PRICE, by="code")
+cafe_full
+
+# base::rbind 함수를 이용해 데이터 결합
+rbind(NAME, PRICE)         # 데이터 결합이 제대로 되지 않고, 에러가 발생함함
+
+# dplyr::bind_rows 함수를 이용해 데이터 결합
+bind_rows(NAME, PRICE)     #결합할 데이터들의 변수가 다르더라도 결합이 이루어지며, 빈자리는 NA로 채워짐
+
+# 실습용 데이터 생성
+A <- data.frame(code=c(1,2), name=c("coffee", "cake"))
+B <- data.frame(code=c(3,4), name=c("cookie","juice"))
+C <- data.frame(code=5, name="bread")
+
+# 세 개의 데이터를 bind_rows함수를 이용해 행으로 결합
+cafe_bind<-bind_rows(A,B,C, .id="id")
+cafe_bind
+# id열을 통해 1,2행의 원천은 첫 번째 데이터, 3,4행의 원천은 두 번째 데이터,
+# 5행의 원천은 세번째 데이터임을 알 수 있음
+
+# 실습용 데이터 생성
+A<-data.frame(id=c(1:5), x=c(80,90,95,100,75))
+B<-data.frame(y=c(80,75,100,90,80))
+
+# bind_cols 함수를 이용해 데이터의 열을 붙여 결합
+bind_cols(A,B)
+
+# reshape2 패키지 설치 및 로드
+install.packages("reshape2")
+library(reshape2)
+
+# melt함수를 사용한 데이터변환
+melt(airquality, id.vars=c("Month", "Day"), na.rm=T)
+
+# airquality 데이터에 melt함수를 적용하여 air_melt변수에 저장
+air_melt<-melt(airquality, id.vars=c("Month", "Day"), na.rm=T)
+
+# dcast 함수를 이용해 air_melt 데이터를 다시 원래 airquality의 형태로 변환
+air_dcast<-dcast(air_melt, Month + Day ~ ...)
+
