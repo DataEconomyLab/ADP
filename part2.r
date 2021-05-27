@@ -484,3 +484,18 @@ class(iris)
 iris_dt <- as.data.table(iris)
 class(iris_dt)         # iris_dt의 클래스 확인인
 
+# iris_dt 출력
+iris_dt
+
+# 모든 데이터 테이블 객체 확인
+tables()
+
+# iris_dt의 1행 출력
+iris_dt[1,]
+
+# iris_dt의 1~5행 출력
+iris_dt[c(1:5),]
+
+# Species 변수 값이 setosa인 행들만 출력
+iris_dt[iris_dt$Species=="setosa"]
+
