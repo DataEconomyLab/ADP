@@ -459,3 +459,28 @@ air_melt<-melt(airquality, id.vars=c("Month", "Day"), na.rm=T)
 # dcast 함수를 이용해 air_melt 데이터를 다시 원래 airquality의 형태로 변환
 air_dcast<-dcast(air_melt, Month + Day ~ ...)
 
+# air_dcast와 airquality 비교
+# -> 변수의 순서는 조금 바귀었지만 변수명과 변수값은 동일한 것을 확인할 수 있음
+head(air_dcast)
+head(airquality)
+
+dcast(air_melt, Month+Day ~ variable, fun.aggregate = mean)
+
+# data.table 패키지 설치 및 로드
+install.packages("data.table")
+library(data.table)
+
+# 데이터 테이블 생성
+mydata <- data.table(x=c(1:3), y=c("가", "나", "다"))
+mydata
+
+# mydata의 데이터 타입 확인
+class(mydata)          # 데이터테이블의 클래스가 data.frame도 포함하고 있음음
+
+# iris 데이터의 클래스 : 데이터프레임
+class(iris)
+
+# iris 데이터를 데이터 테이블로 변환
+iris_dt <- as.data.table(iris)
+class(iris_dt)         # iris_dt의 클래스 확인인
+
