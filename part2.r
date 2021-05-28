@@ -583,3 +583,60 @@ table(is.na(airquality$Ozone))
 airquality[is.na(airquality$Ozone), "Ozone"] <- mean(airquality$Ozone, na.rm=T)
 table(is.na(airquality$Ozone))
 
+# 패키지 다운 및 로드
+options("install.lock"=FALSE)
+install.packages("Rtools")
+install.packages("DMwR")
+library(DMwR)
+
+# airquality에서 na값을 가진 행들의 번호 추출
+na_idx<-which(!complete.cases(airquality))
+
+# na값을 제거하기 전의 원본 데이터를 air_before에 저장
+air_before <- airquality
+
+# na값을 제거한 데이터를 air_after에 저장 (centrallmputation 함수 활용)
+air_after <- centralImputation(airquality)
+
+# 두 데이터에서 na_idx에 저장된 행번호에 해당하는 데이터들을 추출하여 na값이 잘 대체되었는지
+# 비교(head 함수를 사용하여 상위 6행만 비교)
+head(air_before[na_idx,])
+head(air_after[na_idx,])
+
+# 아래 코드의 실행결과 Ozone변수의 중위수는 31.5, Solar.R변수의 중위수는 205이며
+# air_before에 존재하던 NA값들이 각 변수의 중위수들로 잘 대체된 것을 확인할 수 있다.
+median(airquality$Ozone, na.rm=T)
+median(airquality$Solar.R, rn.rm=T)
+
+# 참고) na.rm-=T 옵션: na값은 제외하고 나머지 숫자들로 중위수를 계산
+boxplot(airquality$Ozone)
+
+# boxplot의 반환값 확인
+OzoneBP <- boxplot(airquality$Ozone)
+OzoneBP
+
+# Ozone의 1사분위수를 LowerQ에 저장
+LowerQ <- fivenum(airquality$Ozone)[2]
+
+# Ozone의 3사분위수를 UpperQ에 저장
+UpperQ <- fivenum(airquality$Ozone)[4]
+
+# Ozone 변수의 IQR을 구하여 IQR변수에 저장
+IQR<- IQR(airquality$Ozone, na.rm=T)
+
+# Ozone 값이 UpperQ + IQR*1.5보다 큰 행번호를 upperOutlier에 저장
+# which(조건): 조건을 만족하는 행번호 추출
+upperOutlier <- which(airquality$Ozone>UpperQ+IQR*1.5)
+# Ozone 값이 LowerQ-IQR*1.5 보다 작은 행번호를 lowerOutlier에 저장
+lowerOutlier<-which(airquality$Ozone<LowerQ-IQR*1.5)
+
+# upperOutlier와 lowerOutlier에 해당하는 Ozone 변수의 값 출력
+airquality[upperOutlier, "Ozone"]
+airquality[lowerOutlier, "Ozone"]
+
+# 현재 날짜를 today 변수에 wjwkd
+today<-Sys.Date()
+today
+
+# today의 클래스 확인
+class(today)
