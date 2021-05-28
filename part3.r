@@ -99,3 +99,64 @@ str(cars)
 car_aov <- aov(mpg~cyl*am, car)
 summary(car_aov)
 
+# 데이터 확인 및 전처리
+data("airquality")
+str(airquality)
+
+# air 데이터 생성
+air <- airquality[,c(1:4)]
+str(air)
+
+# 피어슨 상관계수 계산
+cor(air, use="pairwise.complete.obs", method="pearson")
+
+# 켄달 상관계수 계산
+cor(air, use="pairwise.complete.obs", method="kendall")
+
+# 스피어만 상관계수 계산
+cor(air, use="pairwise.complete.obs", method="spearman")
+
+# air 데이터에 대한 상관계수 행렬 생성
+air_cor <- cor(air, use="pairwise.complete.obs")
+
+# 상관행렬 시각화
+pairs(air_cor)
+
+# 피어슨 상관계수에 대한 검정 수행
+cor.test(air$Ozone, air$Wind, method="pearson")
+
+# 데이터 로드 및 확인
+library(MASS)
+data("Cars93")
+str(Cars93)
+
+# 단순 선형 회귀 모형 생성
+lm(Price~EngineSize, Cars93)
+
+# 모형 살펴보기: summary() 이용
+# summary(): 주어진 인자에 대한 요약 정보 산출
+Cars93_lm <- lm(Price~EngineSize, Cars93)
+summary(Cars93_lm)
+
+# 2x3 형태로 그래프를 배치하기 위해 화면 조정
+par(mfrow=c(2,3))
+
+# 그래프 생성
+plot(Cars93_lm, which=c(1:6))
+
+# 회귀모형 생성
+Cars93_lm <- lm(Price~EngineSize, Cars93)
+
+# 실습을 위해 시드값 설정
+set.seed(1234)
+
+# Cars93 데이터에서 랜덤으로 5개의 행번호를 추출하여 idx 변수에 저장장
+idx <- sample(1:nrow(Cars93),5) 
+idx
+
+# 예측에 사용할 데이터셋 구성
+test <- Cars93[idx,]
+
+# 예측 수행1 (점추정)
+predict.lm(Cars93_lm, test, interval="none")
+
