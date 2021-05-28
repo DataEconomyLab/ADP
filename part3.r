@@ -60,3 +60,42 @@ var.test(Bwt~Sex, data=cats)
 
 t.test(Bwt~Sex, data=cats, alternative="two.sided", var.equal=FALSE)
 
+# MASS 패키지의 survey 데이터 불러오기
+data(survey, package="MASS")
+
+# survey 데이터의 구조 확인
+str(survey)
+
+# W.Hnd 변수의 분할표 확인
+table(survey$W.Hnd)
+
+# W.Hnd변수의 분할표를 data변수에 저장
+data <- table(survey$W.Hnd)
+
+# 적합도 검정 수행
+chisq.test(data, p=c(0.2,0.8))
+
+# 분산분석 결과를 result 변수에 저장
+result<-aov(Sepal.Width~Species, data=iris)
+
+# 분산분석표 확인
+summary(result)
+
+TukeyHSD(aov(Sepal.Width~Species, data=iris))
+
+# 데이터 확인 및 전처리
+data("mtcars")
+str(mtcars)
+
+# aov함수를 사용하기 위해 독립변수인 cyl, am를 팩터형으로 변환
+mtcars$cyl <- as.factor(mtcars$cyl)
+mtcars$am <- as.factor(mtcars$am)
+
+# cyl, am, mpg 변수들로만 구성된 분석용 데이터셋 생성
+car <- mtcars[,c("cyl", "am", "mpg")]
+str(cars)
+
+# 분산분석 수행
+car_aov <- aov(mpg~cyl*am, car)
+summary(car_aov)
+
