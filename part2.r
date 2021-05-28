@@ -640,3 +640,75 @@ today
 
 # today의 클래스 확인
 class(today)
+
+# 현재 날짜와 시간을 time변수에 저장
+time<-Sys.time()
+time
+
+# time의 클래스 확인
+class(time)
+
+# today 내부의 값 확인 : 1970년 1월 1일 이후로 경과한 일 수를 의미함
+unclass(today)
+
+# time 내부의 값 확인 : 1970 1월 1일 00:00:00 이후로 경과한 초 수를 의미함
+unclass(time)
+
+# unclass를 적용한 time 값을 다시 원래 날짜 형식으로 변환하기
+# unclass(time)은 1970년 1월 1일 이후로 경과한 초 수를 의미하므로,
+# origin 인자값으로 "1970-01-01"을 지정
+as.POSIXct(unclass(time), origin="1970-01-01")
+
+# 현재 시간을 구한 뒤 POSIXlt 형식으로 변환하여 time 변수에 저장
+time <- as.POSIXlt(Sys.time())
+
+# 연(year) 추출
+# time$year에는 1900년 이후의 경과 년도수가 저장되어 있으므로 현재 년도를 구하기 위해서는 1900을 더해야 함
+time$year+1900
+
+# 월(mon) 추출: 월 정보는 0-11값으로 저장되어 있기 때문에 1을 더함
+time$mon+1
+
+# 일(mday) 추출
+time$mday
+
+# 요일(wday) 추출출
+time$wday
+
+# 현재 날짜와 시간을 now에 저장
+now <- Sys.time()
+
+# now 데이터의 class 확인
+class(now)
+
+# now 데이터를 문자형으로 변환
+format(now, "%y-%m-%d %H:%M:%S")
+
+# 문자형으로 변환한 데이터의 class 확인
+class(format(now, "%y-%m-%d %H:%M:%S"))
+
+date <- as.Date("20200101", format="%Y%m%d")
+date
+
+# date의 class 확인 : Date 형식으로 변환된 것을 확인할 수 있음
+class(date)
+
+# 현재 날짜로브터 100일 후의 날짜 구하기
+Sys.Date() + 100
+
+# "2020-01-01"로 표현된 데이터로부터 365일 후의 날짜 구하기
+as.Date("2020-01-01", format="%Y-%m-%d") + 365
+
+# "1990-01-01"과 "2025-01-01" 사이의 일 수 구하기
+as.Date("1990-01-01") - as.Date("2025-01-01")
+
+# 두 날짜 사이의 일 수 만을 구하고 싶다면 날짜끼리 뺄셈을 한 후
+# 해당 값을 숫자형으로 변환하면 된다.
+days <- as.Date("1990-01-01") - as.Date("2025-01-01")
+as.numeric(days)
+
+# 오늘 날짜와 "1990-01-01" 사이의 일 수 구하기
+difftime("1990-01-01", Sys.Date())
+
+# "09:40:00" 시간과 "18:30:00" 시간 사이의 차이 구하기
+as.difftime("09:40:00") - as.difftime("18:30:00")
