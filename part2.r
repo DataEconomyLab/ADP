@@ -499,3 +499,87 @@ iris_dt[c(1:5),]
 # Species 변수 값이 setosa인 행들만 출력
 iris_dt[iris_dt$Species=="setosa"]
 
+# Species별 Petal.Length의 평균 출력 (Species 변수로 데이터를 그룹화)
+iris_dt[, mean(Petal.Length), by=Species]
+
+# Petal.Length 값이 1 이상인 행들을 Species로 그룹화한 뒤,
+# Sepal.Length와 Sepal.Width의 평균을 각각 mean.SL과 mean.SW를 변수명으로 하여 출력
+iris_dt[Petal.Length>=1, .(mean.SL=mean(Sepal.Length), mean.SW=mean(Sepal.Width)), by=Species]
+
+# airQuality를 데이터테이블로 변환
+air<-as.data.table(airquality)
+str(air)
+
+# Wind_class 변수 생성
+# := 기호 사용: air 데이터에 Wind_class 변수가 추가됨
+air[, Wind_class:=ifelse(Wind>=mean(Wind),"U","D")]
+
+# air 데이터 출력: Wind_class 변수가 추가된 것을 확인할 수 있음
+air
+
+# season 변수 생성
+air[, season:=ifelse(Month %in% c(12,1,2), "winter", 
+                     ifelse(Month %in% c(3:5), "spring",
+                            ifelse(Month %in% c(6:8), "summer", "fall")))]
+
+# air 데이터 1~5행 학인: season 변수가 추가되었음
+air[1:5]
+
+# season별 Ozone과 Solar.R 변수들의 평균 산출 및 정렬
+air[, .(Ozone_mean=mean(Ozone, na.rm=T), Solar.R_mean=mean(Solar.R, na.rm=T)),
+    by=.(season)][order(Ozone_mean, decreasing=T)]
+
+# plyr 패키지에 내장된 baseball 데이터를 데이터 테이블로 변환
+library(plyr)
+baseball<-as.data.table(baseball)
+
+# year 변수를 key로 지정
+setkey(baseball, year)
+
+# 1960년대 데이터 조회
+baseball[J(1960)]
+
+# 1960년대 경기 정보 중 팀별 출전횟수의 평균 산출
+# 팀별 출전횟수의 평균을 저장할 변수 이름을 지정할 경우에는 'list(변수명=값)' 코드 활용
+baseball[J(1960), list(gmean=mean(g)), by=team]
+
+# is.na 함수 활용
+is.na(airquality$Ozone)
+
+# Ozone 변수에 존재하는 na의 개수 산출
+sum(is.na(airquality$Ozone))
+
+# Ozone 변수에 존재하는 na의 개수 산출
+sum(is.na(airquality$Ozone))
+
+# Ozone 변수에서 na가 아닌 값과 na값의 개수 비교
+# table(): 범주별 도수를 구해주는 함수
+# FALSE: 해당 데이터가 na가 아닌 경우, TRUE: 해당 데이터가 na인 경우
+table(is.na(airquality$Ozone))
+
+# airquality의 변수(열)별로 결측치의 개수를 구하는 사용자 정의 함수를 적용
+# sum(is.na(x)): x 데이터에 존재하는 na값 개수의 합계를 구함
+apply(airquality, 2, function(x) sum(is.na(x)))
+
+# na 값이 하나라도 존재하는 행들은 air_na 변수에 저장
+# complete.cases 함수를 적용했을 때 FALSE를 반환하는 행들만 저장하면 됨
+air_na <- airquality[!complete.cases(airquality),]
+head(air_na)
+
+# na 값을 하나도 가지고 있지 않은 행들은 air_com 변수에 저장
+# complete.cases 함수를 적용했을 때 TRUE를 반환하는 행들만 저장하면 됨
+air_com <- airquality[complete.cases(airquality),]
+head(air_com)
+
+# 방법1
+# 데이터에 NA가 존재할 경우 평균을 산출할 수 없다. 따라서 mean함수 내부의 na.rm인자 값을 T로 # 지정해야 하며,
+# 이렇게 할 경우 NA값을 제거하고 나머지 값들에 대한 평균을 산출한다.
+
+# ifelse 함수를 이용해 Ozone변수값이 na이면 평균으로 대체하고 na가 아니면 기존값을 그대로 가지게 함
+airquality$Ozone <- ifelse(is.na(airquality$Ozone), mean(airquality$Ozone, na.rm=T), airquality$Ozone)
+table(is.na(airquality$Ozone))
+
+# 방법2
+airquality[is.na(airquality$Ozone), "Ozone"] <- mean(airquality$Ozone, na.rm=T)
+table(is.na(airquality$Ozone))
+
