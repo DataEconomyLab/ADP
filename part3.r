@@ -160,3 +160,53 @@ test <- Cars93[idx,]
 # 예측 수행1 (점추정)
 predict.lm(Cars93_lm, test, interval="none")
 
+# 예측 수행2 (회귀계수의 불확실성을 감안한 구간추정)
+predict.lm(Cars93_lm, test, interval="confidence")
+
+# 예측 수행3 (회귀계수의 불확실성과 오차항을 감안한 구간추정)
+predict.lm(Cars93_lm, test, interval="prediction")
+
+# 중회귀모형 생성
+# formula 인자값으로 여러개의 독립변수를 지정할 때 + 기호로 연결
+iris_lm<-lm(Petal.Length~Sepal.Length+Sepal.Width+Petal.Width+Species, iris)
+
+# 모형 확인
+summary(iris_lm)
+
+# 4. R을 이용한 다중선형회귀분석
+# 데이터 로드 및 확인
+library(MASS)
+str(Cars93)
+
+# 다중회귀모형 생성 후 Price_lm 변수에 저장
+Price_lm<-lm(Price~EngineSize+Weight, Cars93)
+
+# 모형 요약정보 살펴보기
+summary(Price_lm)
+
+# 6. R을 이용한 변수선택법
+# 패키지 로드
+library(MASS)
+
+# 회귀모형을 생성한 후 lm_a 변수에 저장
+lm_a<-lm(Price~EngineSize+RPM+Width+Length, Cars93)
+
+# 모형의 요약정보 확인
+summary(lm_a)
+
+# 회귀모형 lm_b 생성
+lm_b<-lm(Price~EngineSize+RPM+Length, Cars93)
+
+# 모형의 요약정보 확인
+summary(lm_b)
+
+# 회귀모형 lm_c 생성
+lm_c<-lm(Price~EngineSize+RPM, Cars93)
+
+# 모형의 요약정보 확인
+summary(lm_c)
+
+# 후진제거법을 활용한 변수 선택
+lm_result<-lm(Price~EngineSize+Horsepower+RPM+Width+Length+Weight, Cars93)
+step(lm_result, direction="backward")
+
