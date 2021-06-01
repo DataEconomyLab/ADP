@@ -125,3 +125,34 @@ prune.c<-prune(dt.model,cp=cp)
 plotcp(dt.model)
 
 # 예측을 통한 정분류율 확인
+install.packages("caret")
+library(caret)
+pred.dt<-predict(dt.model,test[,-1],type="class")       # 예측값을 "class"로 지정하여 분류 그룹을 출력
+confusionMatrix(data=pred.dt, reference=test[,1], positive='1')
+
+# ROC 커브 그리기 및 AUC 산출
+install.packages("ROCR")
+library(ROCR)
+pred.dt.roc<-prediction(as.numeric(pred.dt),as.numeric(test[,1]))
+plot(performance(pred.dt.roc,"tpr","fpr"))       # ROC Curve 작성
+abline(a=0,b=1,lty=2,col="black")
+
+performance(pred.dt.roc,"auc")@y.values
+
+# rpart 함수를 활용하여 의사결정나무분석 실시
+library(rpart)
+library(rpart.plot)
+dt.model2<-rpart(Species~., data=train.iris)
+prp(dt.model2,type=4,extra=2)
+
+pred.dt2<-predict(dt.model2,test.iris[,-5],type="class")
+confusionMatrix(data=pred.dt2,reference=test.iris[,5])
+
+# bagging 함수를 활용하여 bagging 분석 실시
+library(adabag)
+bag<-bagging(credit.rating~.,
+             data=train,
+             mfinal=15)
+names(bag)
+bag$importance
+
