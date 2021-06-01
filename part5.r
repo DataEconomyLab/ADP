@@ -156,3 +156,46 @@ bag<-bagging(credit.rating~.,
 names(bag)
 bag$importance
 
+# 예측을 통한 정분류율 확인
+install.packages("caret")
+library(caret)
+pred.bg<-predict(bag,test,type="class")
+confusionMatrix(data=as.factor(pred.bg$class),     # class 열을 factor로 변환하여 test의 class열과 형태를 맞춤
+                reference=test$credit.rating,
+                positive='1')
+
+# ROC 커브 그리기 및 AUC 산출
+install.packages("ROCR")
+library(ROCR)
+pred.bg.roc<-prediction(as.numeric(pred.bg$class), as.numeric(test[,1]))
+plot(performance(pred.bg.roc,"tpr","fpr"))         # ROC Curve 작성
+abline(a=0,b=1,lty=2,col="black")
+
+performance(pred.bg.roc,"auc")@y.values
+
+# boosting 함수를 활용하여 boosting 분석 실시
+library(adabag)
+boost<-boosting(credit.rating ~.
+                data=train,
+                boos=TRUE,
+                mfinal=80)                         # 반복 또는 트리의 수는 80   
+names(boost)
+
+boost$importance      # importance는 변수의 상대적인 중요도를 나타내며, 지니지수의 gain을 고려한 측도
+
+# 예측을 통한 정분류율 확인
+install.packages("caret")
+library(caret)
+pred.boos<-predict(boost,test,type="class")
+confusionMatrix(data=as.factor(pred.boos$class),
+                reference=test$credit.rating,
+                positive='1')
+
+# ROC 커브 그리기 및 AUC 산출
+install.packages("ROCR")
+library(ROCR)
+pred.boos.roc<-prediction(as.numeric(pred.boos$class),as.numeric(test[,1]))
+plot(performance(pred.boos.roc,"tpr","fpr"))        # ROC Curve 작성
+abline(a=0,b=1,lty=2,col="black")
+
+performance(pred.boos.roc,"auc")@y.values
