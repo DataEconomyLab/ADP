@@ -34,4 +34,16 @@ library(KoNLP)
 useSejongDic()                                   # 세종사전 사용
 sentence<-'아버지가 방에 스르륵 들어가신다.'
 extractNoun(sentence)                            # '스르륵'은 명사가 아님
+SimplePos22(sentence)                            # 품사를 확인할 수 있음
+
+# Corpus로 변환하지 않고 tm패키지의 FUN을 사용하여 사용자정의함수를 제작하여 텍스트 전처리 수행
+clean_txt2<-function(txt){
+  txt<-removeNumbers(txt)                        # 숫자 제거
+  txt<-removePunctuation(txt)                    # 문장부호 제거
+  txt<-stripWhitespace(txt)                      # 공백 제거
+  txt<-gsub("[^[:alnum:]]"," ",txt)              # 영문자/숫자를 제외한 것들을 " "으로 처리
+  return(txt)
+}
+clean.news2<-clean_txt2(news)
+Noun.news[5]             # 복합명사가 붙어서 출력되지 않음.
 
