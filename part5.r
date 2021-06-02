@@ -407,3 +407,107 @@ names(nn.model2)
 library(neuralnet)
 set.seed(1231)                 # nnet 함수를 사용할 때, 실행했으면 실행 안해도 됨
 test.infert$nn.model2_pred.prob <- compute(nn.model2, covariate=test.infert[,c(2:4:6)])$net.result
+test.infert$nn.model2_pred <- ifelse(test.infert$nn.model2_pred.prob > 0.5, 1, 0)
+confusionMatrix(as.factor(test.infert$nn.model2_pred), as.factor(test.infert[,5]))
+
+# 3. 군집분석
+# dist 함수를 활용하여 거리 구하기
+US<-USArrests
+US.dist<-dist(US,"euclidean")
+US.dist
+
+# hclust 함수를 활용하여 계층적 군집분석
+US.single<-hclust(US.dist^2,method="single")
+plot(US.single)
+
+# 계층적 군집 결과 그룹 나누기와 덴드로그램 구분 짓기
+group<-cutree(US.average,k=6)
+group
+
+plot(US.average)
+rect.hclust(US.average,k=6,border="red")
+
+# kmeans 함수를 활용하여 kmeans 군집분석 실시
+train.data<-train[,-1]
+credit.kmeans<-kmeans(train.data, centers=2)
+credit.kmeans
+
+kmeans.table<-table(train$credit.rating, credit.kmeans$cluster)
+kmeans.table
+(kmeans.table[1,1] + kmeans.table[2,2]) / sum(kmeans.table)
+
+# NbClust 함수로 최적의 군집 수 찾기
+install.packages("NbClust")
+library(NbClust)
+nc <- NbClust(train.data, min.nc=2, max.nc=15, method="kmeans")
+
+# Mclust 함수를 활용하여 혼합 분포 군집분석 실시
+install.packages("mclust")
+library(mclust)
+mc<-Mclust(iris[,1:4], G=3)
+
+# plot.Mclust 함수를 활용하여 혼합 분포 군집분석 실시
+plot.Mclust(mc)
+mc$classification
+
+# 4. 연관분석
+# 데이터 입력 / as 함수를 활용한 데이터 변형 / 데이터 확인
+install.packages("arules")
+library(arules)
+id <- c(1,2,3,4,5,6)
+gender <- c("FEMALE", "MALE", "FEMALE", "FEMALE", "MALE", "FEMALE")
+age <- c("age_20", "age_20", "age_40", "age_30", "age_40", "age_30")
+rank <- c("Gold", "Silver", "Silver", "VIP", "Gold", "Gold")
+mobile_app_use <- c("YES", "YES", "NO", "YES", "NO", "YES")
+re_order <- c("YES", "NO", "NO", "YES", "NO", "YES")
+cust_tel <- cbind(id, gender, age, rank, mobile_app_use, re_order)
+cust_tel <- as.data.frame(cust_tel)
+cust_tel_1 <- subset(cust_tel, select = -c(id))
+cust_tel_1
+
+tran.cust<-as(cust_tel_1, "transactions")
+tran.cust
+
+inspect(tran.cust)
+
+# apriori 함수를 활용하여 연관규칙분석 실시
+install.packages("arules")
+library(arules)
+data(Groceries)
+Groceries                              # Groceries 데이터셋은 식료품 판매점의 1달 간 POS 데이터로 총 169개의 제품과
+                                       # 9835건의 거래건수를 포함, 해당 데이터는 이미 transaction으로 변환되어 있음
+inspect(Groceries[1:3])                # inspect 함수는 transaction 데이터와 연관규칙분석 결과를 확인하기 위한 함수
+
+rules<-apriori(Groceries,
+               parameter=list(support=0.01,
+                              condidence=0.3))
+
+# 연관규칙분석 결과 확인
+inspect(sort(rules,by=c("confidence"), decreasing=T)[1:5])
+# 중복가지치기 함수 구현
+prune.dup.rules <- function(rules) {
+  rule.subset.matrix <- is.subset(rules, rules, sparse=FALSE)
+  rule.subset.matrix[lower.tri(rule.sebset.matrix, diag=T)] <- NA
+  dup.rules <- colSums(rule.subset.matrix, na.rm=T) >= 1
+  pruned.rules <- rules[!dup.rules]
+  return(pruned.rules)
+}
+
+# 특정 규칙 찾기 : 우변의 아이템 구매를 이끌 아이템 찾기
+metric.params <- list(supp=0.001, conf=0.5, minlen=2)           # minlen은 좌항과 우항을 합친 최소 물품수
+rules<- apriori(data=Groceries, parameter=metric.params,
+                appearance=list(default="lhs", rhs="soda"),
+                control=list(verbose=F))
+rules<-prune.dup.rules(rules)                                   # 중복 규칙 가지치기 실시
+rules<-sort(rules, decreasing=TRUE, by="confidence")            # confidence를 기준으로 정렬
+inspect(rules[1:5])
+
+# 특정 규칙 찾기 : 좌변의 아이템 세트를 가지고 있을 때 물품 찾기
+metric.params<-list(supp=0.001, conf=0.3, minlen=2)
+rules<-apriori(data=Groceries, parameter=metric.params,
+               appearance=list(default="rhs",
+                               lhs=c("yogurt", "sugar")),
+               control=list(verbose=F))
+rules<-sort(rules, decreasing=TRUE, by="confidence")
+inspect(rules[1:5])
+
