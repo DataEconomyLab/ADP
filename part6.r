@@ -47,3 +47,23 @@ clean_txt2<-function(txt){
 clean.news2<-clean_txt2(news)
 Noun.news[5]             # 복합명사가 붙어서 출력되지 않음.
 
+buildDictionary(ext_dic="sejong",
+                user_dic=data.frame(c(read.table("food.txt"))))     # txt 파일 형태로 호출 가능
+extractNoun(clean.news2[5])     # 스타트업, 빅데이터, 푸드테크, 우아한형제들이 명사로 추풀됨을 확인
+
+# SimplePos22를 활용해 형용사 추출하기
+install.packages("stringr")
+library(stringr)
+doc1<-paste(SimplePos22(clean.news2[[2]]))
+doc1
+
+doc2<-str_match(doc1,"([가-힣]+/PA")    # 품사 중 PA가 형용사이므로 형용사만 뽑아내기 위해 str_match함수 이용
+doc2
+doc3
+doc3[!is.na(doc3)]
+
+test<-stemDocument(c('analyze', 'analyzed','analyzing'))
+completion
+
+VC.news<-VCorpus(VectorSource(clean.news2))
+VC.news[[1]]$content
