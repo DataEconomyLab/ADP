@@ -67,3 +67,46 @@ completion
 
 VC.news<-VCorpus(VectorSource(clean.news2))
 VC.news[[1]]$content
+
+TDM.news<-TermDocumentMatrix(VC.news)
+dim(TDM.news)       # 10개의 기사에서 총 1011개의 단어가 추출되어 1011개의 행과 10개의 열을 가지는 형태 
+inspect(TDM.news[1:5,])
+
+# 명사만 추출하여 TDM을 만들기 위해 사용자 정의 함수 생성
+words<-function(doc) {
+  doc<-as.character(doc)
+  extractNoun(doc)
+}
+
+TDM.news2<-TermDocumentMatrix(VC.news, control=list(tokenize=words))
+dim(TDM.news2)       # 10개의 기사에서 총 289개의 단어가 추출되어 289개의 행과 10개의 열을 가지는 형태 
+inspect(TDM.news2)
+
+# TDM으로 나타난 단어들의 빈도 체크
+tdm2<-as.matrix(TDM.news2)
+tdm3<-rowSums(tdm2)
+tdm4<-tdm3[order(tdm3, decreasing=T)]
+tdm4[1:10]           # 1~10위까지만 나타냄.
+
+# 단어사전 정의 및 TDM 구축
+mydict<-c("빅데이터", "스마트", "산업혁명", "인공지능", "사물인터넷", "AI", "스타트업", "머신러닝")
+my.news<-TermDocumentMatrix(VC.news, control=list(tokenize=words, dictionary=mydict))
+
+inspect(my.news)
+
+words<-function(doc){
+  doc<-as.character(doc)
+  extractNoun(doc)
+}
+
+TDM.news2<-TermDocumentMatrix(VC.news, control=list(tokenize=words))
+
+library(wordcloud)
+tdm2<-as.matrix(TDM.news2)
+term.freq<-sort(rowSums(tdm2),decreasing=T)    # 행을 기준으로 모든 열의 값을 합하여 각 단어에 대한 빈도수 계산
+head(term.freq,15)
+wordcloud(words=names(term.freq),              # term.freq의 이름만 가져옴.
+          freq=term.freq,                      # 빈도는 위에 저장한 term.freq.
+          min.freq=5,                          # 최소빈도는 5
+          random.order=F,
+          colors=brewer.pal(8,'Dark2'))
