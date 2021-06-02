@@ -199,3 +199,211 @@ plot(performance(pred.boos.roc,"tpr","fpr"))        # ROC Curve 작성
 abline(a=0,b=1,lty=2,col="black")
 
 performance(pred.boos.roc,"auc")@y.values
+
+# randomForest 함수를 활용하여 RandomForest 분석 실시
+install.packages("randomForest")
+library(randomForest)
+rf.model<-randomForest(credit.rating ~.,
+                       data=train,
+                       ntree=50,
+                       mtry=sqrt(20),
+                       importance=T)
+rf.model
+
+names(rf.model)
+rf.model$importance
+varImPlot(rf.model)
+
+# 예측을 통한 정분류율 확인
+install.packages("caret")
+library(caret)
+pred.rf<-predict(rf.model,test[,-1],type="class")
+confusionMatrix(data=pred.rf, reference=test[,1], positive='1')
+
+# ROC 커브 그리기 및 AUC 산출
+install.packages("ROCR")
+library(ROCR)
+pred.rf.roc<-prediction(as.numeric(pred.rf),as.numeric(test[,1]))
+plot(performance(pred.rf.roc,"tpr","fpt"))
+abline(a=0,b=1,lty=2,col="black")
+
+abline(a=0,b=1,lty=2,col="black")
+perfomance(pred.rf.roc,"auc")@y.values[[1]]
+
+# randomForest 함수를 활용하여 RandomForest 분석 실시
+library(randomForest)
+rf.model2<-randomForest(Species ~.
+                        data=train.iris,
+                        ntree=50,
+                        mtry=sqrt(4),
+                        importance=T)
+
+rf.model2
+
+pred.rf2<-predict(rf.model2,test.iris[,-5],type="class")
+confusionMatrix(data=pred.rf2, reference=test.iris[,5],positive='1')
+
+# tune.svm 함수를 활용하여 최적의 파라미터값 찾기
+library(e1071)
+tune.svm(credit.rating~.,
+         data=credit,
+         gamma=10^(-6:-1),         # 여기서는 6*2=12개의 조합에서 모수조율이 이루어짐
+         cost=10^(1:2))
+
+# svm 함수를 활용하여 SVM 분석 실시
+svm.model<-svm(credit.rating~.,
+               data=train,
+               kernel="radial",
+               gamma=0.01,
+               cost=10)
+summary(svm.model)
+
+
+# 예측을 통한 정분류율 확인
+install.packages("caret")
+library(caret)
+pred.svm<-predict(svm.model,test,type="class")
+confusionMatrix(data=pred.svm, reference=test[,1], positive='1')
+
+# ROC 커브 그리기 및 AUC 산출 
+install.packages("ROCR")
+library(ROCR)
+pred.svm.roc<-prediction(as.numeric(pred.svm),as.numeric(test[,1]))
+plot(performance(pred.svm.roc,"tpr","fpr"))        # ROC Curve 작성
+abline(a=0,b=1,lty=2,col="black")
+
+performance(pred.svm.roc,"auc")@y.values
+
+# tune.svm, svm 함수를 활용하여 SVM 분석 실시
+library(e1071)
+tune.svm(Species~.,
+         data=iris,
+         gamma=2^(-1:1),
+         cost=2^(2:4))
+
+svm.model2<-svm(Species~.,
+                data=train.iris,
+                kernel="radial",
+                gamma=0.5,
+                cost=16)
+
+pred.svm2<-predict(svm.model2,test.iris,type="class")
+confusionMatrix(daat=pred.svm2, reference=test.iris[,5],positive='1')
+
+# naiveBayes 함수를 활용하여 나이브 베이즈 분류분석 실시
+library(e1071)
+nb.model<-naiveBayes(credit.rating~.,
+                     data=train,
+                     laplace=0)
+nb.model
+
+# 예측을 통한 정분류율 확인
+install.packages("caret")
+library(caret)
+pred.nb<-predict(nb.model,test[,-1],type="class")
+confusionMatrix(data=pred.nb, reference=test[,1], positive='1')
+
+# ROC 커브 그리기 및 AUC 산출
+install.packages("ROCR")
+library(ROCR)
+pred.nb.roc<-prediction(as.numeric(pred.nb),as.numeric(test[,1]))
+plot(performance(pred.nb.roc,"tpr","fpr"))       # ROC Curve 작성
+abline(a=0,b=1,lty=2,col="black")
+
+performance(pred.nb.roc,"auc")@y.values
+
+# knn 함수를 활용하여 K-NN 실시
+library(class)
+train.data<-train[,-1]                           # 분석을 위해 데이터셋의 종속변수(credit.rating) 제외
+test.data<-test[,-1]
+class<-train[,1]
+knn.3<-knn(train.data,test.data,class,k=3)
+knn.7<-knn(train.data,test.data,class,k=7)
+knn.10<-knn(train.data,test.data,class,k=10)
+
+# 각각의 k에 대한 분류 table 작성과 분류 정확도 확인
+t.1<-table(knn.3,test$credit.rating)
+t.1
+
+t.2<-table(knn.7,test$credit.rating)
+t.2
+
+t.3<-table(knn.10,test$credit.rating)
+t.3
+
+# 분류를 가장 잘하는 최적의 k값을 찾기 위한 함수 구현
+result<-numeric()
+k=3:22
+for(i in k) {
+  pred<-knn(train.data,test.data,class,k=i-2)
+  t<-table(pred,test$credit.rating)
+  result[i-2]<-(t[1,1]+t[2,2])/sum(t)
+}
+result
+
+sort(result,decreasing=T)
+
+which(result==max(result))
+
+# nnet 함수를 활용하여 인공신경망 분석 실시
+library(nnet)
+set.seed(1231)                               # 재현성을 위해 설정
+nn.model<-nnet(credit.rating~.,              # 45개의 가중치가 주어졌고 iteration이 반복될수록 error이 줄고 있음.
+               data=train,
+               size=2,
+               maxit=200,
+               decay=5e-04)
+
+summary(nn.model)
+
+# github을 활용한 인공신경망 시각화와 변수 중요도 파악
+install.packages("devtools")
+library(devtools)
+X11()
+plot.nnet(nn.model)
+
+install.packages("NeuralNetTools")
+library(NeuralNetTools)
+X11()
+garson(nn.model)
+
+# 예측을 통한 정분류율 확인
+install.packages("caret")
+library(caret)
+pred.nn<-predict(nn.model,test[,-1],type="class")
+confusionMatrix(data=as.factor(pred.nn),reference=test[,1],positive='1')
+
+# ROC 커브 그리기 및 AUC 산출
+install.packages("ROCR")
+library(ROCR)
+pred.nn.roc<-prediction(as.numeric(pred.nn),as.numeric(test[,1]))
+plot(performance(pred.nb.roc,"tpr","fpr"))
+abline(a=0,b=1,lty=2,col="black")
+
+performance(pred.nn.roc,"auc")@y.values
+
+# neuralnet 함수를 활용하여 인공신경망 분석 실시
+library(neuralnet)
+data(infert)
+in.part<-createDataPartition(infert$case,
+                             times=1,
+                             p=0.7)
+table(infert[in.part$Resample1,"case"])
+
+parts<-as.vector(in.part$Resample1)
+train.infert<-infert[parts,]
+test.infert<-infert[-parts,]
+nn.model2<-neuralnet(case~age+parity+induced+spontaneous,
+                     data=train.infert,
+                     hidden=c(2,2),
+                     algorithm="rprop+",
+                     threshold=0.01,
+                     stepmax=1e+5)
+plot(nn.model2)
+
+names(nn.model2)
+
+# compute 함수를 활용한 정분류율 확인
+library(neuralnet)
+set.seed(1231)                 # nnet 함수를 사용할 때, 실행했으면 실행 안해도 됨
+test.infert$nn.model2_pred.prob <- compute(nn.model2, covariate=test.infert[,c(2:4:6)])$net.result
